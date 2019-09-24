@@ -59,8 +59,58 @@ def parse_response(dns_response, length):
     print(dns_response)
 
     print("--------------------------------------")
-    print(hex(dns_response[0]), hex(dns_response[1]))
-    #print("ID: {0}".format(int(hex(dns_response[0:2]).strip('x'), 16)))
+    print("ID: {0}".format(int.from_bytes(dns_response[0:2], byteorder='big', signed=False)))
+
+    qr = (dns_response[2] & 0b10000000) >> 7
+    print("QR: {0}".format(qr))
+
+    opcode = (dns_response[2] & 0b01111000) >> 3
+    print("OPCODE: {0}".format(opcode))
+
+    aa = (dns_response[2] & 0b00000100) >> 2
+    print("AA: {0}".format(aa))
+
+    tc = (dns_response[2] & 0b00000010) >> 1
+    print("TC: {0}".format(tc))
+
+    rd = (dns_response[2] & 0b00000001)
+    print("RD: {0}".format(rd))
+
+    ra = (dns_response[3] & 0b10000000) >> 7
+    print("RA: {0}".format(ra))
+
+    z = (dns_response[3] & 0b01110000) >> 4
+    print("Z: {0}".format(z))
+
+    rcode = (dns_response[3] & 0b00001111)
+    print("RCODE: {0}".format(rcode))
+
+    print("QCOUNT: {0}".format(int.from_bytes(dns_response[4:6], byteorder='big', signed=False)))
+
+    print("ANCOUNT: {0}".format(int.from_bytes(dns_response[6:8], byteorder='big', signed=False)))
+
+    print("NSCOUNT: {0}".format(int.from_bytes(dns_response[8:10], byteorder='big', signed=False)))
+
+    print("ARCOUNT: {0}".format(int.from_bytes(dns_response[10:12], byteorder='big', signed=False)))
+
+    # parse QNAME section and convert back to human readable format.
+    current_offset = 12
+    flag = 0
+    hostname = ""
+    while dns_response[current_offset] != 0:
+        label_length = dns_response[current_offset]
+        label = ""
+        for i in range(0, label_length):
+            label += chr(dns_response[current_offset + (i+1)])
+        current_offset += label_length+1
+        if flag == 0:
+            hostname += label
+            flag = 1
+        else:
+            hostname += "." + label
+
+    print("QNAME: {0}".format(hostname))
+
 
     return 1
 
@@ -120,7 +170,7 @@ if __name__ == "__main__":
             continue
 
     print("Processing DNS response..")
-    parse_response(response, query_length)
+    parse_response(bytearray(response), query_length)
 
     #print(bin(int.from_bytes(response, byteorder='big')))
     #print(response)
