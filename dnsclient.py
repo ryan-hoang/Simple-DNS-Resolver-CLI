@@ -49,49 +49,44 @@ def create_query(params):
     pack_into('>h', question, offset, 1)  # qclass set to 1
     offset += 2
 
-    #print(bytes(qr))
-    #print(bytes(question))
     return bytes(qr) + bytes(question)
 
 
-def parse_response(dns_response, length):
-    print(dns_response[0 : length])
-    print(dns_response)
-
+def parse_response(dns_response):
     print("--------------------------------------")
-    print("ID: {0}".format(int.from_bytes(dns_response[0:2], byteorder='big', signed=False)))
+    print("HEADER.ID: {0}".format(int.from_bytes(dns_response[0:2], byteorder='big', signed=False)))
 
     qr = (dns_response[2] & 0b10000000) >> 7
-    print("QR: {0}".format(qr))
+    print("HEADER.QR: {0}".format(qr))
 
     opcode = (dns_response[2] & 0b01111000) >> 3
-    print("OPCODE: {0}".format(opcode))
+    print("HEADER.OPCODE: {0}".format(opcode))
 
     aa = (dns_response[2] & 0b00000100) >> 2
-    print("AA: {0}".format(aa))
+    print("HEADER.AA: {0}".format(aa))
 
     tc = (dns_response[2] & 0b00000010) >> 1
-    print("TC: {0}".format(tc))
+    print("HEADER.TC: {0}".format(tc))
 
     rd = (dns_response[2] & 0b00000001)
-    print("RD: {0}".format(rd))
+    print("HEADER.RD: {0}".format(rd))
 
     ra = (dns_response[3] & 0b10000000) >> 7
-    print("RA: {0}".format(ra))
+    print("HEADER.RA: {0}".format(ra))
 
     z = (dns_response[3] & 0b01110000) >> 4
-    print("Z: {0}".format(z))
+    print("HEADER.Z: {0}".format(z))
 
     rcode = (dns_response[3] & 0b00001111)
-    print("RCODE: {0}".format(rcode))
+    print("HEADER.RCODE: {0}".format(rcode))
 
-    print("QCOUNT: {0}".format(int.from_bytes(dns_response[4:6], byteorder='big', signed=False)))
+    print("HEADER.QCOUNT: {0}".format(int.from_bytes(dns_response[4:6], byteorder='big', signed=False)))
 
-    print("ANCOUNT: {0}".format(int.from_bytes(dns_response[6:8], byteorder='big', signed=False)))
+    print("HEADER.ANCOUNT: {0}".format(int.from_bytes(dns_response[6:8], byteorder='big', signed=False)))
 
-    print("NSCOUNT: {0}".format(int.from_bytes(dns_response[8:10], byteorder='big', signed=False)))
+    print("HEADER.NSCOUNT: {0}".format(int.from_bytes(dns_response[8:10], byteorder='big', signed=False)))
 
-    print("ARCOUNT: {0}".format(int.from_bytes(dns_response[10:12], byteorder='big', signed=False)))
+    print("HEADER.ARCOUNT: {0}".format(int.from_bytes(dns_response[10:12], byteorder='big', signed=False)))
 
     # parse QNAME section and convert back to human readable format.
     current_offset = 12
@@ -109,13 +104,13 @@ def parse_response(dns_response, length):
         else:
             hostname += "." + label
 
-    print("QNAME: {0}".format(hostname))
+    print("QUESTION.QNAME: {0}".format(hostname))
     current_offset += 1  # move one byte past the null terminator for the qname section
 
-    print("QTYPE: {0}".format(int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False)))
+    print("QUESTION.QTYPE: {0}".format(int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False)))
     current_offset += 2  # Increment by 2 bytes to get to qclass section
 
-    print("QCLASS: {0}".format(int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False)))
+    print("QUESTION.QCLASS: {0}".format(int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False)))
     current_offset += 2  # Increment by 2 bytes to get to answer.name section
 
     name_offset = int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False) & 0b00111111
@@ -135,20 +130,19 @@ def parse_response(dns_response, length):
     print("ANSWER.RDLENGTH: {0}".format(rdlength))
     current_offset += 2  # Increment by 2 bytes to get to answer.name section
 
+
     ip_address = ""
-    flag = 0
-    for i in range(0, rdlength):
-        if flag == 0:
-            ip_address += str(dns_response[current_offset+i])
-            flag = 1
-        else:
-            ip_address += "." + str(dns_response[current_offset+i])
-    print(ip_address)
-
-
-
-
-    return 1
+    if rcode == 3:
+        ip_address = "N/A Domain does not exist."
+    else:
+        flag = 0
+        for i in range(0, rdlength):
+            if flag == 0:
+                ip_address += str(dns_response[current_offset+i])
+                flag = 1
+            else:
+                ip_address += "." + str(dns_response[current_offset+i])
+    print("ANSWER.RDATA: {0}".format(ip_address))
 
 
 if __name__ == "__main__":
@@ -181,9 +175,6 @@ if __name__ == "__main__":
     datagram = create_query(dns_params)
     query_length = len(datagram)  # length in bytes, used later determine offsets
 
-    #print(bin(int.from_bytes(datagram, byteorder='big')))
-    #print(datagram)
-
     serverName = '8.8.8.8'  # Google's public DNS server
     serverPort = 53  # The standard port for DNS requests
 
@@ -206,10 +197,6 @@ if __name__ == "__main__":
             continue
 
     print("Processing DNS response..")
-    parse_response(bytearray(response), query_length)
-
-    #print(bin(int.from_bytes(response, byteorder='big')))
-    #print(response)
-    #print(hex(response[0]), hex(response[1]))
+    parse_response(bytearray(response))
 
 
