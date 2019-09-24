@@ -110,6 +110,42 @@ def parse_response(dns_response, length):
             hostname += "." + label
 
     print("QNAME: {0}".format(hostname))
+    current_offset += 1  # move one byte past the null terminator for the qname section
+
+    print("QTYPE: {0}".format(int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False)))
+    current_offset += 2  # Increment by 2 bytes to get to qclass section
+
+    print("QCLASS: {0}".format(int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False)))
+    current_offset += 2  # Increment by 2 bytes to get to answer.name section
+
+    name_offset = int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False) & 0b00111111
+    print("ANSWER.NAME: {0}".format(name_offset))
+    current_offset += 2  # Increment by 2 bytes to get to answer.type section
+
+    print("ANSWER.TYPE: {0}".format(int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False)))
+    current_offset += 2  # Increment by 2 bytes to get to answer.class section
+
+    print("ANSWER.CLASS: {0}".format(int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False)))
+    current_offset += 2  # Increment by 2 bytes to get to answer.ttl section
+
+    print("ANSWER.TTL: {0}".format(int.from_bytes(dns_response[current_offset:current_offset+4], byteorder='big', signed=False)))
+    current_offset += 4  # Increment by 2 bytes to get to answer.rdlength section
+
+    rdlength = int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False)
+    print("ANSWER.RDLENGTH: {0}".format(rdlength))
+    current_offset += 2  # Increment by 2 bytes to get to answer.name section
+
+    ip_address = ""
+    flag = 0
+    for i in range(0, rdlength):
+        if flag == 0:
+            ip_address += str(dns_response[current_offset+i])
+            flag = 1
+        else:
+            ip_address += "." + str(dns_response[current_offset+i])
+    print(ip_address)
+
+
 
 
     return 1
@@ -160,7 +196,7 @@ if __name__ == "__main__":
         try:
             print("Sending DNS query (attempt {0})..".format(i + 1))
             socket.sendto(datagram, (serverName, serverPort))
-            response, addr = socket.recvfrom(2048)
+            response, addr = socket.recvfrom(1024)
             print("DNS response received (attempt {0} of 3)".format(i + 1))
             break
         except timeout:
