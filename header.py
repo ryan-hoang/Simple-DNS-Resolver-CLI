@@ -1,7 +1,7 @@
 import ctypes
 
 
-class Query(ctypes.BigEndianStructure):
+class Header(ctypes.BigEndianStructure):
     _fields_ = [
         ("ID", ctypes.c_uint16, 16),
         ("QR", ctypes.c_uint8, 1),

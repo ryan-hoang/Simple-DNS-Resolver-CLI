@@ -1,25 +1,25 @@
 from socket import *
 import sys
 from struct import *
-from query import *
+from header import *
 import ctypes
 
 
 def create_query(params):
-    qr = Query()
-    qr.ID = params["id"]
-    qr.QR = params["qr"]
-    qr.OPCODE = params["opcode"]
-    qr.AA = params["aa"]
-    qr.TC = params["tc"]
-    qr.RD = params["rd"]
-    qr.RA = params["ra"]
-    qr.Z = params["z"]
-    qr.RCODE = params["rcode"]
-    qr.QDCOUNT = params["qdcount"]
-    qr.ANCOUNT = params["ancount"]
-    qr.NSCOUNT = params["nscount"]
-    qr.ARCOUNT = params["arcount"]
+    head = Header()
+    head.ID = params["id"]
+    head.QR = params["qr"]
+    head.OPCODE = params["opcode"]
+    head.AA = params["aa"]
+    head.TC = params["tc"]
+    head.RD = params["rd"]
+    head.RA = params["ra"]
+    head.Z = params["z"]
+    head.RCODE = params["rcode"]
+    head.QDCOUNT = params["qdcount"]
+    head.ANCOUNT = params["ancount"]
+    head.NSCOUNT = params["nscount"]
+    head.ARCOUNT = params["arcount"]
 
     labels = params["address"].split(".")
 
@@ -49,7 +49,7 @@ def create_query(params):
     pack_into('>h', question, offset, 1)  # qclass set to 1
     offset += 2
 
-    return bytes(qr) + bytes(question)
+    return bytes(head) + bytes(question)
 
 
 def parse_response(dns_response):
