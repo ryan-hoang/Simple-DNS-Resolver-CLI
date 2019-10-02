@@ -4,6 +4,10 @@ from struct import *
 from header import *
 import ctypes
 
+# Ryan Hoang
+# CS555
+# Fall 2019
+
 
 def create_query(params):
     head = Header()
@@ -82,7 +86,8 @@ def parse_response(dns_response):
 
     print("HEADER.QCOUNT: {0}".format(int.from_bytes(dns_response[4:6], byteorder='big', signed=False)))
 
-    print("HEADER.ANCOUNT: {0}".format(int.from_bytes(dns_response[6:8], byteorder='big', signed=False)))
+    answer_count = int.from_bytes(dns_response[6:8], byteorder='big', signed=False)
+    print("HEADER.ANCOUNT: {0}".format(answer_count))
 
     print("HEADER.NSCOUNT: {0}".format(int.from_bytes(dns_response[8:10], byteorder='big', signed=False)))
 
@@ -90,19 +95,7 @@ def parse_response(dns_response):
 
     # parse QNAME section and convert back to human readable format.
     current_offset = 12
-    flag = 0
-    hostname = ""
-    while dns_response[current_offset] != 0:
-        label_length = dns_response[current_offset]
-        label = ""
-        for i in range(0, label_length):
-            label += chr(dns_response[current_offset + (i+1)])
-        current_offset += label_length+1
-        if flag == 0:
-            hostname += label
-            flag = 1
-        else:
-            hostname += "." + label
+    hostname, current_offset = read_name_from_offset(current_offset, dns_response)
 
     print("QUESTION.QNAME: {0}".format(hostname))
     current_offset += 1  # move one byte past the null terminator for the qname section
@@ -113,36 +106,101 @@ def parse_response(dns_response):
     print("QUESTION.QCLASS: {0}".format(int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False)))
     current_offset += 2  # Increment by 2 bytes to get to answer.name section
 
-    name_offset = int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False) & 0b00111111
-    print("ANSWER.NAME: {0}".format(name_offset))
-    current_offset += 2  # Increment by 2 bytes to get to answer.type section
+    for i in range(answer_count):
 
-    print("ANSWER.TYPE: {0}".format(int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False)))
-    current_offset += 2  # Increment by 2 bytes to get to answer.class section
+        print("------------------------------------------------")
+        print("RR #{0}".format(i+1))
 
-    print("ANSWER.CLASS: {0}".format(int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False)))
-    current_offset += 2  # Increment by 2 bytes to get to answer.ttl section
+        name_offset = int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False) & 0b00111111
+        print("ANSWER.NAME: {0}".format(name_offset))
+        current_offset += 2  # Increment by 2 bytes to get to answer.type section
 
-    print("ANSWER.TTL: {0}".format(int.from_bytes(dns_response[current_offset:current_offset+4], byteorder='big', signed=False)))
-    current_offset += 4  # Increment by 2 bytes to get to answer.rdlength section
+        type = int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False)
+        # print("Type: {0}".format(type))
+        t = ""
+        if type == 1:
+            t = "A"
+        elif type == 5:
+            t = "CNAME"
+        elif type == 2:
+            t = "NS"
+        else:
+            t = "OTHER"
+        print("ANSWER.TYPE: {0}".format(t))
+        current_offset += 2  # Increment by 2 bytes to get to answer.class section
 
-    rdlength = int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False)
-    print("ANSWER.RDLENGTH: {0}".format(rdlength))
-    current_offset += 2  # Increment by 2 bytes to get to answer.name section
+        print("ANSWER.CLASS: {0}".format(int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False)))
+        current_offset += 2  # Increment by 2 bytes to get to answer.ttl section
+
+        print("ANSWER.TTL: {0}".format(int.from_bytes(dns_response[current_offset:current_offset+4], byteorder='big', signed=False)))
+        current_offset += 4  # Increment by 2 bytes to get to answer.rdlength section
+
+        rdlength = int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False)
+        print("ANSWER.RDLENGTH: {0}".format(rdlength))
+
+        current_offset += 2  # Increment by 2 bytes to get to answer.rdata section
+
+        next_record_offset = current_offset + rdlength  # location of the next record
+
+        ip_address = ""
+
+        if type == 1:  # A-record
+            flag = 0
+            for i in range(0, rdlength):
+                if flag == 0:
+                    ip_address += str(dns_response[current_offset+i])
+                    flag = 1
+                else:
+                    ip_address += "." + str(dns_response[current_offset+i])
+            current_offset = next_record_offset
+        elif type == 2:  # NS record
+            current_offset = next_record_offset
+        elif type == 5:
+            count = 0
+            ad = []
+            while count != rdlength:
+
+                if dns_response[current_offset] == 192:
+                    offset = int.from_bytes(dns_response[current_offset : current_offset + 2], byteorder='big', signed=False) & 0b0011111111111111
+                    temp, current_offset = read_name_from_offset(offset, dns_response)
+                    ad.append(temp)
+                    current_offset += 2
+                    count += 2
+                else:
+                    length = dns_response[current_offset]
+                    current_offset += 1 # move offset past length byte
+                    count += 1
+                    tmp = ""
+                    for x in range(length):
+                        tmp += chr(dns_response[current_offset + x])
+                    ad.append(tmp)
+
+                    current_offset += length
+                    count += length
+
+            ip_address = ".".join(ad)
+            current_offset = next_record_offset
+
+        print("ANSWER.RDATA: {0}".format(ip_address))
 
 
-    ip_address = ""
-    if rcode == 3:
-        ip_address = "N/A Domain does not exist."
-    else:
-        flag = 0
-        for i in range(0, rdlength):
-            if flag == 0:
-                ip_address += str(dns_response[current_offset+i])
-                flag = 1
-            else:
-                ip_address += "." + str(dns_response[current_offset+i])
-    print("ANSWER.RDATA: {0}".format(ip_address))
+def read_name_from_offset(offset, dns_response):
+    hostname = ""
+    flag = 0
+    while dns_response[offset] != 0:
+        label_length = dns_response[offset]
+        label = ""
+        offset += 1  # move past length byte
+        for i in range(0, label_length):
+            label += chr(dns_response[offset + i])
+        offset += label_length
+        if flag == 0:
+            hostname += label
+            flag = 1
+        else:
+            hostname += "." + label
+    return hostname, offset
+
 
 
 if __name__ == "__main__":
@@ -178,7 +236,7 @@ if __name__ == "__main__":
     serverName = '8.8.8.8'  # Google's public DNS server
     serverPort = 53  # The standard port for DNS requests
 
-    socket = socket(AF_INET, SOCK_DGRAM)
+    socket = socket(AF_INET, SOCK_DGRAM)  # Get UDP socket
     socket.settimeout(5.0)
 
     response = ""
@@ -187,7 +245,7 @@ if __name__ == "__main__":
         try:
             print("Sending DNS query (attempt {0})..".format(i + 1))
             socket.sendto(datagram, (serverName, serverPort))
-            response, addr = socket.recvfrom(1024)
+            response, addr = socket.recvfrom(4096)
             print("DNS response received (attempt {0} of 3)".format(i + 1))
             break
         except timeout:
@@ -198,5 +256,3 @@ if __name__ == "__main__":
 
     print("Processing DNS response..")
     parse_response(bytearray(response))
-
-
