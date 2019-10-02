@@ -111,7 +111,9 @@ def parse_response(dns_response):
         print("------------------------------------------------")
         print("RR #{0}".format(i+1))
 
-        name_offset = int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False) & 0b00111111
+        name_offset = int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False) & 0b0011111111111111
+        n, bla = read_name_from_offset(name_offset, dns_response)
+        print(n)
         print("ANSWER.NAME: {0}".format(name_offset))
         current_offset += 2  # Increment by 2 bytes to get to answer.type section
 
@@ -155,7 +157,7 @@ def parse_response(dns_response):
             current_offset = next_record_offset
         elif type == 2:  # NS record
             current_offset = next_record_offset
-        elif type == 5:
+        elif type == 5:  # CNAME record
             count = 0
             ad = []
             while count != rdlength:
