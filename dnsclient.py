@@ -112,9 +112,9 @@ def parse_response(dns_response):
         print("RR #{0}".format(i+1))
 
         name_offset = int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False) & 0b0011111111111111
-        n, bla = read_name_from_offset(name_offset, dns_response)
-        print(n)
-        print("ANSWER.NAME: {0}".format(name_offset))
+        name, bla = read_name_from_offset(name_offset, dns_response)
+        print("ANSWER.NAME: {0}".format(name))
+
         current_offset += 2  # Increment by 2 bytes to get to answer.type section
 
         type = int.from_bytes(dns_response[current_offset:current_offset+2], byteorder='big', signed=False)
@@ -187,21 +187,23 @@ def parse_response(dns_response):
 
 
 def read_name_from_offset(offset, dns_response):
-    hostname = ""
-    flag = 0
+    hostname = []
     while dns_response[offset] != 0:
-        label_length = dns_response[offset]
-        label = ""
-        offset += 1  # move past length byte
-        for i in range(0, label_length):
-            label += chr(dns_response[offset + i])
-        offset += label_length
-        if flag == 0:
-            hostname += label
-            flag = 1
+        if dns_response[offset] == 192:
+            off = int.from_bytes(dns_response[offset : offset + 2], byteorder='big', signed=False) & 0b0011111111111111
+            temp, offset = read_name_from_offset(off, dns_response)
+            hostname.append(temp)
+            offset += 3
         else:
-            hostname += "." + label
-    return hostname, offset
+            label_length = dns_response[offset]
+            label = ""
+            offset += 1  # move past length byte
+            for i in range(0, label_length):
+                label += chr(dns_response[offset + i])
+            offset += label_length
+            hostname.append(label)
+    host = ".".join(hostname)
+    return host, offset
 
 
 
@@ -257,4 +259,5 @@ if __name__ == "__main__":
             continue
 
     print("Processing DNS response..")
+    print(bytearray(response)[40:])
     parse_response(bytearray(response))
