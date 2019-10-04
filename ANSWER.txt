@@ -1,0 +1,260 @@
+root@Stormbreaker:/mnt/c/Users/Ryan/Documents/Bash/CS555/CS555_dns_client# python3 dnsclient.py gmu.edu
+Preparing DNS query..
+Contacting DNS server..
+Sending DNS query (attempt 1)..
+DNS response received (attempt 1 of 3)
+Processing DNS response..
+--------------------------------------
+HEADER.ID: 1234
+HEADER.QR: 1
+HEADER.OPCODE: 0
+HEADER.AA: 0
+HEADER.TC: 0
+HEADER.RD: 1
+HEADER.RA: 1
+HEADER.Z: 0
+HEADER.RCODE: 0
+HEADER.QCOUNT: 1
+HEADER.ANCOUNT: 1
+HEADER.NSCOUNT: 0
+HEADER.ARCOUNT: 0
+QUESTION.QNAME: gmu.edu
+QUESTION.QTYPE: 1
+QUESTION.QCLASS: 1
+------------------------------------------------
+RR #1
+ANSWER.NAME: gmu.edu
+ANSWER.TYPE: A
+ANSWER.CLASS: 1
+ANSWER.TTL: 21316
+ANSWER.RDLENGTH: 4
+ANSWER.RDATA: 129.174.1.59
+
+
+
+
+
+root@Stormbreaker:/mnt/c/Users/Ryan/Documents/Bash/CS555/CS555_dns_client# python3 dnsclient.py google.com
+Preparing DNS query..
+Contacting DNS server..
+Sending DNS query (attempt 1)..
+DNS response received (attempt 1 of 3)
+Processing DNS response..
+--------------------------------------
+HEADER.ID: 1234
+HEADER.QR: 1
+HEADER.OPCODE: 0
+HEADER.AA: 0
+HEADER.TC: 0
+HEADER.RD: 1
+HEADER.RA: 1
+HEADER.Z: 0
+HEADER.RCODE: 0
+HEADER.QCOUNT: 1
+HEADER.ANCOUNT: 1
+HEADER.NSCOUNT: 0
+HEADER.ARCOUNT: 0
+QUESTION.QNAME: google.com
+QUESTION.QTYPE: 1
+QUESTION.QCLASS: 1
+------------------------------------------------
+RR #1
+ANSWER.NAME: google.com
+ANSWER.TYPE: A
+ANSWER.CLASS: 1
+ANSWER.TTL: 127
+ANSWER.RDLENGTH: 4
+ANSWER.RDATA: 172.217.15.78
+
+
+
+
+
+root@Stormbreaker:/mnt/c/Users/Ryan/Documents/Bash/CS555/CS555_dns_client# python3 dnsclient.py yahoo.com
+Preparing DNS query..
+Contacting DNS server..
+Sending DNS query (attempt 1)..
+DNS response received (attempt 1 of 3)
+Processing DNS response..
+--------------------------------------
+HEADER.ID: 1234
+HEADER.QR: 1
+HEADER.OPCODE: 0
+HEADER.AA: 0
+HEADER.TC: 0
+HEADER.RD: 1
+HEADER.RA: 1
+HEADER.Z: 0
+HEADER.RCODE: 0
+HEADER.QCOUNT: 1
+HEADER.ANCOUNT: 6
+HEADER.NSCOUNT: 0
+HEADER.ARCOUNT: 0
+QUESTION.QNAME: yahoo.com
+QUESTION.QTYPE: 1
+QUESTION.QCLASS: 1
+------------------------------------------------
+RR #1
+ANSWER.NAME: yahoo.com
+ANSWER.TYPE: A
+ANSWER.CLASS: 1
+ANSWER.TTL: 1531
+ANSWER.RDLENGTH: 4
+ANSWER.RDATA: 98.137.246.7
+------------------------------------------------
+RR #2
+ANSWER.NAME: yahoo.com
+ANSWER.TYPE: A
+ANSWER.CLASS: 1
+ANSWER.TTL: 1531
+ANSWER.RDLENGTH: 4
+ANSWER.RDATA: 98.138.219.232
+------------------------------------------------
+RR #3
+ANSWER.NAME: yahoo.com
+ANSWER.TYPE: A
+ANSWER.CLASS: 1
+ANSWER.TTL: 1531
+ANSWER.RDLENGTH: 4
+ANSWER.RDATA: 98.138.219.231
+------------------------------------------------
+RR #4
+ANSWER.NAME: yahoo.com
+ANSWER.TYPE: A
+ANSWER.CLASS: 1
+ANSWER.TTL: 1531
+ANSWER.RDLENGTH: 4
+ANSWER.RDATA: 72.30.35.9
+------------------------------------------------
+RR #5
+ANSWER.NAME: yahoo.com
+ANSWER.TYPE: A
+ANSWER.CLASS: 1
+ANSWER.TTL: 1531
+ANSWER.RDLENGTH: 4
+ANSWER.RDATA: 98.137.246.8
+------------------------------------------------
+RR #6
+ANSWER.NAME: yahoo.com
+ANSWER.TYPE: A
+ANSWER.CLASS: 1
+ANSWER.TTL: 1531
+ANSWER.RDLENGTH: 4
+ANSWER.RDATA: 72.30.35.10
+
+
+
+
+
+
+root@Stormbreaker:/mnt/c/Users/Ryan/Documents/Bash/CS555/CS555_dns_client# python3 dnsclient.py www.youtube.com
+Preparing DNS query..
+Contacting DNS server..
+Sending DNS query (attempt 1)..
+DNS response received (attempt 1 of 3)
+Processing DNS response..
+--------------------------------------
+HEADER.ID: 1234
+HEADER.QR: 1
+HEADER.OPCODE: 0
+HEADER.AA: 0
+HEADER.TC: 0
+HEADER.RD: 1
+HEADER.RA: 1
+HEADER.Z: 0
+HEADER.RCODE: 0
+HEADER.QCOUNT: 1
+HEADER.ANCOUNT: 11
+HEADER.NSCOUNT: 0
+HEADER.ARCOUNT: 0
+QUESTION.QNAME: www.youtube.com
+QUESTION.QTYPE: 1
+QUESTION.QCLASS: 1
+------------------------------------------------
+RR #1
+ANSWER.NAME: www.youtube.com
+ANSWER.TYPE: CNAME
+ANSWER.CLASS: 1
+ANSWER.TTL: 21545
+ANSWER.RDLENGTH: 22
+ANSWER.RDATA: youtube-ui.l.google.com
+------------------------------------------------
+RR #2
+ANSWER.NAME: youtube-ui.l.google.com
+ANSWER.TYPE: A
+ANSWER.CLASS: 1
+ANSWER.TTL: 269
+ANSWER.RDLENGTH: 4
+ANSWER.RDATA: 172.217.13.238
+------------------------------------------------
+RR #3
+ANSWER.NAME: youtube-ui.l.google.com
+ANSWER.TYPE: A
+ANSWER.CLASS: 1
+ANSWER.TTL: 269
+ANSWER.RDLENGTH: 4
+ANSWER.RDATA: 172.217.164.142
+------------------------------------------------
+RR #4
+ANSWER.NAME: youtube-ui.l.google.com
+ANSWER.TYPE: A
+ANSWER.CLASS: 1
+ANSWER.TTL: 269
+ANSWER.RDLENGTH: 4
+ANSWER.RDATA: 172.217.15.78
+------------------------------------------------
+RR #5
+ANSWER.NAME: youtube-ui.l.google.com
+ANSWER.TYPE: A
+ANSWER.CLASS: 1
+ANSWER.TTL: 269
+ANSWER.RDLENGTH: 4
+ANSWER.RDATA: 172.217.15.110
+------------------------------------------------
+RR #6
+ANSWER.NAME: youtube-ui.l.google.com
+ANSWER.TYPE: A
+ANSWER.CLASS: 1
+ANSWER.TTL: 269
+ANSWER.RDLENGTH: 4
+ANSWER.RDATA: 172.217.164.174
+------------------------------------------------
+RR #7
+ANSWER.NAME: youtube-ui.l.google.com
+ANSWER.TYPE: A
+ANSWER.CLASS: 1
+ANSWER.TTL: 269
+ANSWER.RDLENGTH: 4
+ANSWER.RDATA: 172.217.7.142
+------------------------------------------------
+RR #8
+ANSWER.NAME: youtube-ui.l.google.com
+ANSWER.TYPE: A
+ANSWER.CLASS: 1
+ANSWER.TTL: 269
+ANSWER.RDLENGTH: 4
+ANSWER.RDATA: 172.217.7.174
+------------------------------------------------
+RR #9
+ANSWER.NAME: youtube-ui.l.google.com
+ANSWER.TYPE: A
+ANSWER.CLASS: 1
+ANSWER.TTL: 269
+ANSWER.RDLENGTH: 4
+ANSWER.RDATA: 172.217.9.206
+------------------------------------------------
+RR #10
+ANSWER.NAME: youtube-ui.l.google.com
+ANSWER.TYPE: A
+ANSWER.CLASS: 1
+ANSWER.TTL: 269
+ANSWER.RDLENGTH: 4
+ANSWER.RDATA: 172.217.12.238
+------------------------------------------------
+RR #11
+ANSWER.NAME: youtube-ui.l.google.com
+ANSWER.TYPE: A
+ANSWER.CLASS: 1
+ANSWER.TTL: 269
+ANSWER.RDLENGTH: 4
+ANSWER.RDATA: 172.217.13.78

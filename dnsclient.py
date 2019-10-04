@@ -7,6 +7,15 @@ import ctypes
 # Ryan Hoang
 # CS555
 # Fall 2019
+# Programming Assignment 1 - DNS resolver
+# Currently only parses and displays CNAME and A records
+
+# notes: In hindsight, I should have gotten a library to do the heavy lifting of manipulating the byte data.
+# Python is not my primary language ¯\_(ツ)_/¯
+# Will refactor in the future.
+# Uses only Python Standard Library
+
+# Written and tested using Python 3.6.3
 
 
 def create_query(params):
@@ -56,6 +65,7 @@ def create_query(params):
     return bytes(head) + bytes(question)
 
 
+# Helper function to parse response to DNS query. See IETF RFC 1035 for details
 def parse_response(dns_response):
     print("--------------------------------------")
     print("HEADER.ID: {0}".format(int.from_bytes(dns_response[0:2], byteorder='big', signed=False)))
@@ -144,53 +154,53 @@ def parse_response(dns_response):
 
         next_record_offset = current_offset + rdlength  # location of the next record
 
-        ip_address = ""
+        labels = []
+
+        # Parse RDATA section of Record:
 
         if type == 1:  # A-record
-            flag = 0
             for i in range(0, rdlength):
-                if flag == 0:
-                    ip_address += str(dns_response[current_offset+i])
-                    flag = 1
-                else:
-                    ip_address += "." + str(dns_response[current_offset+i])
-            current_offset = next_record_offset
-        elif type == 2:  # NS record
-            current_offset = next_record_offset
+                labels.append(str(dns_response[current_offset+i]))
+            ip_address = ".".join(labels)
+            current_offset = next_record_offset  # jump to next record offset
+        elif type == 2:  # NS record - TODO
+            current_offset = next_record_offset  # jump to next record offset
         elif type == 5:  # CNAME record
             count = 0
-            ad = []
-            while count != rdlength:
+            while count != rdlength:  # Iterate until we reach the specified length of the message
 
-                if dns_response[current_offset] == 192:
+                if dns_response[current_offset] == 192:  # parse the pointer format message
                     offset = int.from_bytes(dns_response[current_offset : current_offset + 2], byteorder='big', signed=False) & 0b0011111111111111
                     temp, current_offset = read_name_from_offset(offset, dns_response)
-                    ad.append(temp)
+                    labels.append(temp)
                     current_offset += 2
                     count += 2
-                else:
+                else:  # otherwise treat as normal characters
                     length = dns_response[current_offset]
                     current_offset += 1 # move offset past length byte
                     count += 1
                     tmp = ""
                     for x in range(length):
                         tmp += chr(dns_response[current_offset + x])
-                    ad.append(tmp)
+                    labels.append(tmp)
 
                     current_offset += length
                     count += length
 
-            ip_address = ".".join(ad)
+            ip_address = ".".join(labels)
             current_offset = next_record_offset
 
         print("ANSWER.RDATA: {0}".format(ip_address))
 
 
+# Helper function to parse messages. Messages can contain compressed pointer format or not, either is fine.
+# Starts reading from @param offset
+# offset is an integer and dns_response is a bytearray object
 def read_name_from_offset(offset, dns_response):
     hostname = []
     while dns_response[offset] != 0:
         if dns_response[offset] == 192:
-            off = int.from_bytes(dns_response[offset : offset + 2], byteorder='big', signed=False) & 0b0011111111111111
+            off = int.from_bytes(dns_response[offset: offset + 2], byteorder='big', signed=False) & 0b0011111111111111
             temp, offset = read_name_from_offset(off, dns_response)
             hostname.append(temp)
             offset += 3
@@ -206,17 +216,17 @@ def read_name_from_offset(offset, dns_response):
     return host, offset
 
 
-
 if __name__ == "__main__":
     address = ""
     try:
         address = sys.argv[1]
     except IndexError:
-        print("No address specified. Usage: dnsclient <hostname>")
+        print("No address specified. Usage: python3 dnsclient.py <hostname>")
         sys.exit(0)
 
     print("Preparing DNS query..")
 
+    # Pack parameters to pass into functions.
     dns_params = {
         "id": 1234,
         "qr": 0,
@@ -241,7 +251,7 @@ if __name__ == "__main__":
     serverPort = 53  # The standard port for DNS requests
 
     socket = socket(AF_INET, SOCK_DGRAM)  # Get UDP socket
-    socket.settimeout(5.0)
+    socket.settimeout(5.0)  # Timeout is 5 seconds per assignment spec
 
     response = ""
     print("Contacting DNS server..")
@@ -259,5 +269,4 @@ if __name__ == "__main__":
             continue
 
     print("Processing DNS response..")
-    print(bytearray(response)[40:])
     parse_response(bytearray(response))
