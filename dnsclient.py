@@ -7,7 +7,7 @@ import ctypes
 # Ryan Hoang
 # CS555
 # Fall 2019
-# Programming Assignment 1 - DNS resolver
+# DNS resolver
 # Currently only parses and displays CNAME and A records
 
 # notes: In hindsight, I should have gotten a library to do the heavy lifting of manipulating the byte data.
